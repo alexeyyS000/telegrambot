@@ -1,5 +1,4 @@
 from pydantic import BaseSettings
-from aiogram import Bot, Dispatcher
 
 
 class AdminSettings(BaseSettings):
@@ -8,8 +7,3 @@ class AdminSettings(BaseSettings):
 
     class Config:
         env_file = (".env", ".env.local")
-
-
-bot = Bot(token=AdminSettings().bot_token)
-
-dp = Dispatcher(bot)

@@ -18,13 +18,14 @@ def parse_better_funding_rate():
     list_better_rate = []
 
     max_rate = 0.005
-    min_rate = -0.002
+    min_rate = -0.003
     for i in data:
-        if float(i["r"]) > max_rate or float(i["r"]) < min_rate:
+        rate = float(i["r"])
+        if rate > max_rate or rate < min_rate:
             list_better_rate.append(
                 {
                     "symbol": i["s"],
-                    "rate": float(i["r"]) * 100,
+                    "rate": rate * 100,
                     "date_time": datetime.utcfromtimestamp(int(i["T"]) / 1000).strftime(
                         "%Y-%m-%d %H:%M:%S"
                     ),

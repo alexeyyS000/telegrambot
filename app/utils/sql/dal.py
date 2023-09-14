@@ -110,3 +110,8 @@ class SqlAlchemyRepository:
                 "total_pages": total_pages,
                 "current_page": current_page,
             }
+
+    def delete_all(self):
+        with self.session_factory() as session:
+            session.query(self.Config.model).delete()
+            session.commit()

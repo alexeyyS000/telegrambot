@@ -3,36 +3,46 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     InlineKeyboardButton,
 )
-
-user_keyboard_subscribe = ReplyKeyboardMarkup(
-    resize_keyboard=True, one_time_keyboard=True
-)
-user_keyboard_subscribe.add("subscribe(status)")
-
-user_keyboard_unsubscribe = ReplyKeyboardMarkup(
-    resize_keyboard=True, one_time_keyboard=True
-)
-user_keyboard_unsubscribe.add("unsubscribe")
+from . import samples
 
 
-def actions_keyboard(id, page):
+def user_keyboard_subscribe():
+    user_keyboard_subscribe = ReplyKeyboardMarkup(
+        resize_keyboard=True, one_time_keyboard=True
+    )
+    user_keyboard_subscribe.add("subscribe(status)")
+    return user_keyboard_subscribe
+
+
+def user_keyboard_unsubscribe():
+    user_keyboard_unsubscribe = ReplyKeyboardMarkup(
+        resize_keyboard=True, one_time_keyboard=True
+    )
+    user_keyboard_unsubscribe.add("unsubscribe(cancel application)")
+    return user_keyboard_unsubscribe
+
+
+def actions_keyboard(id: str, page: str):
     markup = InlineKeyboardMarkup()
     markup.add(
-        InlineKeyboardButton(text="add", callback_data=f"add#{id}"),
-        InlineKeyboardButton(text="ban", callback_data=f"ban#{id}"),
-        InlineKeyboardButton(text="refusal", callback_data=f"refusal#{id}"),
-        InlineKeyboardButton(text="⬅️", callback_data=f"page#{page}"),
+        InlineKeyboardButton(text="add", callback_data=samples.add.format(id)),
+        InlineKeyboardButton(text="ban", callback_data=samples.ban.format(id)),
+        InlineKeyboardButton(text="refusal", callback_data=samples.refusal.format(id)),
+        InlineKeyboardButton(
+            text="make_admin", callback_data=samples.make_admin.format(id)
+        ),
+        InlineKeyboardButton(text="⬅️", callback_data=samples.page.format(page)),
     )
     return markup
 
 
-async def pagination_keyboard(data):
+def pagination_keyboard(data: dict):
     buttons = []
     current_page = data["current_page"]
     for x in data["result"]:
         user_button = [
             InlineKeyboardButton(
-                f"{x.name} id : {x.id}", callback_data=f"id#{x.id}_{current_page}"
+                f"{x.name} id : {x.id}", callback_data=f"id#{x.id}#{current_page}"
             )
         ]
         buttons.append(user_button)
@@ -41,7 +51,7 @@ async def pagination_keyboard(data):
     if data["current_page"] != 1:
         prevPage = data["prev_page"]
         bottom_buttons.append(
-            InlineKeyboardButton("⬅️", callback_data=f"page#{prevPage}")
+            InlineKeyboardButton("⬅️", callback_data=samples.page.format(prevPage))
         )
     else:
         bottom_buttons.append(InlineKeyboardButton("⛔️", callback_data="stop"))
@@ -57,7 +67,7 @@ async def pagination_keyboard(data):
     else:
         nextPage = data["next_page"]
         bottom_buttons.append(
-            InlineKeyboardButton("➡️", callback_data=f"page#{nextPage}")
+            InlineKeyboardButton("➡️", callback_data=samples.refusal.format(nextPage))
         )
 
     buttons.append(bottom_buttons)
