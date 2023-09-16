@@ -36,10 +36,10 @@ def actions_keyboard(id: str, page: str):
     return markup
 
 
-def pagination_keyboard(data: dict):
+def pagination_keyboard(current_page, prev_page, next_page, total_pages, result):
     buttons = []
-    current_page = data["current_page"]
-    for x in data["result"]:
+    current_page = current_page
+    for x in result:
         user_button = [
             InlineKeyboardButton(
                 f"{x.name} id : {x.id}", callback_data=f"id#{x.id}#{current_page}"
@@ -48,8 +48,8 @@ def pagination_keyboard(data: dict):
         buttons.append(user_button)
 
     bottom_buttons = []
-    if data["current_page"] != 1:
-        prevPage = data["prev_page"]
+    if current_page != 1:
+        prevPage = prev_page
         bottom_buttons.append(
             InlineKeyboardButton("⬅️", callback_data=samples.page.format(prevPage))
         )
@@ -57,17 +57,14 @@ def pagination_keyboard(data: dict):
         bottom_buttons.append(InlineKeyboardButton("⛔️", callback_data="stop"))
 
     bottom_buttons.append(
-        InlineKeyboardButton(
-            f'{data["current_page"]}/{data["total_pages"]}', callback_data="all_list"
-        )
+        InlineKeyboardButton(f"{current_page}/{total_pages}", callback_data="all_list")
     )
 
-    if data["current_page"] == data["total_pages"]:
+    if current_page == total_pages:
         bottom_buttons.append(InlineKeyboardButton("⛔️", callback_data="stop"))
     else:
-        nextPage = data["next_page"]
         bottom_buttons.append(
-            InlineKeyboardButton("➡️", callback_data=samples.refusal.format(nextPage))
+            InlineKeyboardButton("➡️", callback_data=samples.page.format(next_page))
         )
 
     buttons.append(bottom_buttons)

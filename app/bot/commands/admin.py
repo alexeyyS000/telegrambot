@@ -49,7 +49,13 @@ async def handler(message: types.Message):
     status = getattr(message.from_user, "user_instatce")
     if (status is not None) and (status.admin):
         data = UserDAL(session_maker).filter(pending=True).fetch(3)
-        keyboard = pagination_keyboard(data)
+        keyboard = pagination_keyboard(
+            data["current_page"],
+            data["prev_page"],
+            data["next_page"],
+            data["total_pages"],
+            data["result"],
+        )
         await message.answer(text="adminboard", reply_markup=keyboard)
 
 
@@ -57,7 +63,13 @@ async def handler(message: types.Message):
 async def handler(callback_query: types.CallbackQuery = None):
     page = callback_query.data.split("#")[1]
     data = UserDAL(session_maker).filter(pending=True).fetch(3, page)
-    keyboard = pagination_keyboard(data)
+    keyboard = pagination_keyboard(
+        data["current_page"],
+        data["prev_page"],
+        data["next_page"],
+        data["total_pages"],
+        data["result"],
+    )
     await callback_query.message.edit_reply_markup(reply_markup=keyboard)
 
 

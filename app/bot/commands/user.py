@@ -19,7 +19,9 @@ async def echo_send(message: types.Message):
     status = getattr(message.from_user, "user_instatce")
     if status is None:
         user = {
-            'id':message.from_user.id, 'name':message.from_user.full_name, 'pending':True
+            "id": message.from_user.id,
+            "name": message.from_user.full_name,
+            "pending": True,
         }
         UserDAL(session_maker).create_one(**user)
         await message.answer(

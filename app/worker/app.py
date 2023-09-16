@@ -2,7 +2,7 @@ from celery import Celery
 from celery.schedules import crontab
 from datetime import datetime, timedelta
 from .config import WorkerSettings
-from .. parser.main import parse_better_funding_rate
+from ..parser.main import parse_better_funding_rate
 from db.dal.funding import FundingDAL
 from db.dal.user import UserDAL
 from db.client import session_maker

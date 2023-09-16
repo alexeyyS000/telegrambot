@@ -29,7 +29,7 @@ config.set_main_option("sqlalchemy.url", settings.url)
 # target_metadata = mymodel.Base.metadata
 target_metadata = (
     Base.metadata
-)  # не понимаю как это может работать если Base импортирована from db.base import Base, а не из db.models
+)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

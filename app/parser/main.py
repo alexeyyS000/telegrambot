@@ -3,9 +3,8 @@ from datetime import datetime
 from websockets.sync.client import connect
 from .config import max_rate, min_rate
 
+
 def parse_better_funding_rate():
-
-
     with connect("wss://fstream.binance.com/ws/!markPrice@arr") as websocket:
         data = websocket.recv()
 
@@ -22,9 +21,9 @@ def parse_better_funding_rate():
                 {
                     "symbol": asset_name,
                     "rate": rate * 100,
-                    "date_time": datetime.utcfromtimestamp(int(next_funding_time) / 1000).strftime(
-                        "%Y-%m-%d %H:%M:%S"
-                    ),
+                    "date_time": datetime.utcfromtimestamp(
+                        int(next_funding_time) / 1000
+                    ).strftime("%Y-%m-%d %H:%M:%S"),
                 }
             )
 
