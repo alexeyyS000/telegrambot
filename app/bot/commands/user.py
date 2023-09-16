@@ -4,7 +4,6 @@ from bot.variable import dp
 from .keyboards import user_keyboard_subscribe, user_keyboard_unsubscribe
 from db.dal.user import UserDAL
 from db.client import session_maker
-from bot.schemas import User
 
 
 @dp.message_handler(text="/start")
@@ -19,10 +18,10 @@ async def echo_send(message: types.Message):
 async def echo_send(message: types.Message):
     status = getattr(message.from_user, "user_instatce")
     if status is None:
-        user = User(
-            id=message.from_user.id, name=message.from_user.full_name, pending=True
-        )
-        UserDAL(session_maker).create_one(**user.dict())
+        user = {
+            'id':message.from_user.id, 'name':message.from_user.full_name, 'pending':True
+        }
+        UserDAL(session_maker).create_one(**user)
         await message.answer(
             text=f"application accepted, id = {message.from_user.id}",
             reply_markup=user_keyboard_unsubscribe(),
