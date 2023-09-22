@@ -6,7 +6,7 @@ from ..parser.main import parse_better_funding_rate
 from db.dal.funding import FundingDAL
 from db.dal.user import UserDAL
 from db.client import session_maker
-from bot.alerts import funding_alert
+from bot.alerts.main import funding_alert
 
 settings = WorkerSettings()
 app = Celery(

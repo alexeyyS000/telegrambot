@@ -10,7 +10,7 @@ class DatabaseSettings(BaseSettings):
 
     @property
     def url(self):
-        return f"postgresql+psycopg://{self.user}:{self.password}@{self.host}/{self.db_name}"
+        return f"postgresql+psycopg://{self.user}:{self.password}@localhost:5432/{self.db_name}"
 
     class Config:
         env_prefix = "db_"

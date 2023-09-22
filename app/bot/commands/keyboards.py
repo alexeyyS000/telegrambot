@@ -6,14 +6,6 @@ from aiogram.types import (
 from . import samples
 
 
-def user_keyboard_subscribe():
-    user_keyboard_subscribe = ReplyKeyboardMarkup(
-        resize_keyboard=True, one_time_keyboard=True
-    )
-    user_keyboard_subscribe.add("subscribe(status)")
-    return user_keyboard_subscribe
-
-
 def user_keyboard_unsubscribe():
     user_keyboard_unsubscribe = ReplyKeyboardMarkup(
         resize_keyboard=True, one_time_keyboard=True
@@ -42,7 +34,7 @@ def pagination_keyboard(current_page, prev_page, next_page, total_pages, result)
     for x in result:
         user_button = [
             InlineKeyboardButton(
-                f"{x.name} id : {x.id}", callback_data=f"id#{x.id}#{current_page}"
+                f"{x.full_name} id : {x.id}", callback_data=f"id#{x.id}#{current_page}"
             )
         ]
         buttons.append(user_button)
