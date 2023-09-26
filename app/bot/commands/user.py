@@ -1,21 +1,17 @@
 # flake8: noqa: F811
 import datetime
 from aiogram import types
-from aiogram.dispatcher import FSMContext
+from aiogram.fsm.context import FSMContext
 from bot.variable import dp
 from .keyboards import user_keyboard_unsubscribe
 from bot.states import ClientState
-from app.services.user import UserService
-from .check_user_rights import check_registrated_user
+from services.user import UserService
+from .check_user_rights import check_unregistrated_user
+from aiogram import F
+from bot.states import ClientState
 
 
-async def chanel(message: types.Message, state: FSMContext):
-    if message.text == "unsubscribe(cancel application)":
-        return state.reset_state()
-
-
-@dp.message_handler(text="/start")
-@check_registrated_user
+@dp.message(F.text == "/start")
 async def echo_send(message: types.Message, state: FSMContext):
     await message.answer(
         text="inter enter your full name", reply_markup=user_keyboard_unsubscribe()
@@ -24,10 +20,10 @@ async def echo_send(message: types.Message, state: FSMContext):
     await state.set_state(ClientState.start)
 
 
-@dp.message_handler(state=ClientState.start)
+@dp.message(ClientState.start)
 async def echo_send(message: types.Message, state: FSMContext):
     if message.text == "unsubscribe(cancel application)":
-        await state.reset_state()
+        await state.clear()
     elif len(message.text.split()) != 3:
         await message.answer(text="incorrect try again")
         await state.set_state(ClientState.start)
@@ -37,12 +33,12 @@ async def echo_send(message: types.Message, state: FSMContext):
         await state.set_state(ClientState.full_name)
 
 
-@dp.message_handler(state=ClientState.full_name)
+@dp.message(ClientState.full_name)
 async def echo_send(message: types.Message, state: FSMContext):
     if (
         message.text == "unsubscribe(cancel application)"
     ):  # пока не знаю как отдельной функцией
-        await state.reset_state()
+        await state.clear()
         return 1
     try:
         date_of_birth = datetime.datetime.strptime(message.text, "%d/%m/%Y")
@@ -62,17 +58,15 @@ async def echo_send(message: types.Message, state: FSMContext):
     await state.set_state(ClientState.birth_date)
 
 
-@dp.message_handler(text="/start", state=ClientState.birth_date)
+@dp.message(F.text == "/start")
 async def echo_send(message: types.Message):
     await message.answer(
         text="unsubscribe(cancel application)", reply_markup=user_keyboard_unsubscribe()
     )
 
 
-@dp.message_handler(
-    text="unsubscribe(cancel application)", state=ClientState.birth_date
-)
+@dp.message(F.text == "unsubscribe(cancel application)")
 async def echo_send(message: types.Message, state: FSMContext):
     UserService(message.from_user.id).refusal()
-    await state.reset_state()
+    await state.clear()
     await message.answer(text="done")

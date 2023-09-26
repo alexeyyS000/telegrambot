@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class DatabaseSettings(BaseSettings):
@@ -10,7 +10,8 @@ class DatabaseSettings(BaseSettings):
 
     @property
     def url(self):
-        return f"postgresql+psycopg://{self.user}:{self.password}@{self.host}/{self.db_name}"
+        return f"postgresql+psycopg://{self.user}:{self.password}@localhost:5432/{self.db_name}"
 
-    class Config:
-        env_prefix = "db_"
+    model_config = SettingsConfigDict(
+        env_prefix="db_", env_file=(".env", ".env.local"), extra="allow"
+    )
