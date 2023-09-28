@@ -5,7 +5,7 @@ from .config import WorkerSettings
 from ..parser.main import parse_better_funding_rate
 from db.dal.funding import FundingDAL
 from db.dal.user import UserDAL
-from db.client import session_maker
+from db.client import get_session
 from bot.alerts.main import funding_alert
 
 settings = WorkerSettings()
@@ -28,21 +28,25 @@ app.conf.timezone = "Europe/Moscow"
 
 @app.task(name="app.add")
 def add():
-    FundingDAL(session_maker).delete_all()
+    with get_session() as session:
+        FundingDAL(session).delete_all()
     funding_list = parse_better_funding_rate()
     for i in funding_list:
-        FundingDAL(session_maker).get_or_create(i, symbol=i["symbol"])
+        with get_session() as session:
+            FundingDAL(session).get_or_create(i, symbol=i["symbol"])
 
 
 @app.task(name="app.sand")
-def sand():
-    fundings = FundingDAL(session_maker).all()
+def send():
+    with get_session() as session:
+        fundings = FundingDAL(session).all()
     immediate_fundings = []
     for i in fundings:
         if i.date_time - datetime.utcnow() <= timedelta(minutes=10):
             immediate_fundings.append(i)
     if immediate_fundings:
-        users = UserDAL(session_maker).filter(subscriber=True).all()
+        with get_session() as session:
+            users = UserDAL(session).filter(subscriber=True).all()
         users_id = []
         for i in users:
             users_id.append(i.id)

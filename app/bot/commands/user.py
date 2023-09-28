@@ -5,8 +5,7 @@ from aiogram.fsm.context import FSMContext
 from bot.variable import dp
 from .keyboards import user_keyboard_unsubscribe
 from bot.states import ClientState
-from services.user import UserService
-from .check_user_rights import check_unregistrated_user
+from services.user import get_user_service
 from aiogram import F
 from bot.states import ClientState
 
@@ -54,7 +53,8 @@ async def echo_send(message: types.Message, state: FSMContext):
         "full_name": user_data["name"],
         "pending": True,
     }
-    UserService(message.from_user.id).create(**user_model)
+    with get_user_service(message.from_user.id) as user:
+        user.create(**user_model)
     await state.set_state(ClientState.birth_date)
 
 
@@ -67,6 +67,7 @@ async def echo_send(message: types.Message):
 
 @dp.message(F.text == "unsubscribe(cancel application)")
 async def echo_send(message: types.Message, state: FSMContext):
-    UserService(message.from_user.id).refusal()
+    with get_user_service(message.from_user.id) as user:
+        user.refusal()
     await state.clear()
     await message.answer(text="done")

@@ -3,9 +3,10 @@ from aiogram import types
 from bot.variable import dp
 from .keyboards import actions_keyboard, pagination_keyboard
 from db.dal.user import UserDAL
-from db.client import session_maker
-from services.user import UserService
+from db.client import get_session
+from services.user import get_user_service
 from .check_user_rights import check_admin
+from exceptions import *
 
 
 def get_id(callback_query_data):
@@ -22,9 +23,10 @@ def get_page(callback_query_data):
 async def handler(callback_query: types.CallbackQuery):
     id = get_id(callback_query.data)
     try:
-        UserService(id).add()
+        with get_user_service(id) as user:
+            user.add()
         await callback_query.answer(text=f"id {id} added")
-    except Exception:
+    except AlreadyAdded:
         await callback_query.answer(text=f"id {id} already added")
 
 
@@ -32,9 +34,10 @@ async def handler(callback_query: types.CallbackQuery):
 async def handler(callback_query: types.CallbackQuery):
     id = get_id(callback_query.data)
     try:
-        UserService(id).ban()
+        with get_user_service(id) as user:
+            user.ban()
         await callback_query.answer(text=f"id {id} banned")
-    except Exception:
+    except AlreadyBanned:
         await callback_query.answer(text=f"id {id} already banned")
 
 
@@ -42,9 +45,10 @@ async def handler(callback_query: types.CallbackQuery):
 async def handler(callback_query: types.CallbackQuery):
     id = get_id(callback_query.data)
     try:
-        UserService(id).refusal()
+        with get_user_service(id) as user:
+            user.refusal()
         await callback_query.answer(text=f"id {id} refusaled")
-    except Exception:
+    except AlreadyRefusaled:
         await callback_query.answer(
             text=f"id {id} already refusaled"
         )  # тоже не знаю как избедать дублирования кода тут
@@ -54,16 +58,18 @@ async def handler(callback_query: types.CallbackQuery):
 async def handler(callback_query: types.CallbackQuery):
     id = get_id(callback_query.data)
     try:
-        UserService(id).make_admin()
+        with get_user_service(id) as user:
+            user.make_admin()
         await callback_query.answer(text=f"id {id} admin")
-    except Exception:
+    except AlreadyAdmin:
         await callback_query.answer(text=f"id {id} already admin")
 
 
 @dp.message(lambda message: message.text == "/adminboard")
 @check_admin
 async def handler(message: types.Message):
-    user_data = UserDAL(session_maker).fetch(3)
+    with get_session() as session:
+        user_data = UserDAL(session).fetch(3)
     keyboard = pagination_keyboard(
         user_data["current_page"],
         user_data["prev_page"],
@@ -77,13 +83,14 @@ async def handler(message: types.Message):
 @dp.callback_query(lambda c: c.data.startswith("page"))
 async def handler(callback_query: types.CallbackQuery = None):
     page = callback_query.data.split("#")[1]
-    data = UserDAL(session_maker).fetch(3, page)
+    with get_session() as session:
+        user_data = UserDAL(session).fetch(3, page)
     keyboard = pagination_keyboard(
-        data["current_page"],
-        data["prev_page"],
-        data["next_page"],
-        data["total_pages"],
-        data["result"],
+        user_data["current_page"],
+        user_data["prev_page"],
+        user_data["next_page"],
+        user_data["total_pages"],
+        user_data["result"],
     )
     await callback_query.message.edit_reply_markup(reply_markup=keyboard)
 

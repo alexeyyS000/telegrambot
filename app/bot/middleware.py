@@ -1,5 +1,5 @@
 from aiogram import BaseMiddleware
-from services.user import UserService
+from services.user import get_user_service
 from aiogram.types import Message
 from typing import Callable, Dict, Any, Awaitable
 
@@ -11,6 +11,7 @@ class WeekendCallbackMiddleware(BaseMiddleware):
         event: Message,
         data: Dict[str, Any],
     ) -> Any:
-        user = UserService(event.from_user.id).instance
+        with get_user_service(event.from_user.id) as user:
+            user = user.instance
         data["user"] = user
         return await handler(event, data)

@@ -11,17 +11,15 @@ class SqlAlchemyRepository:
         self._base_query = select(self.Config.model)
 
     def get_one_or_none(self, **kwargs):
-        with self.session_factory() as session:
-            stmt = select(self.Config.model).filter_by(**kwargs)
-            result = session.execute(stmt)
-            return result.scalar_one_or_none()
+        stmt = select(self.Config.model).filter_by(**kwargs)
+        result = self.session_factory.execute(stmt)
+        return result.scalar_one_or_none()
 
     def create_one(self, **kwargs):
-        with self.session_factory() as session:
-            instance = self.Config.model(**kwargs)
-            session.add(instance)
-            session.commit()
-            return instance
+        instance = self.Config.model(**kwargs)
+        self.session_factory.add(instance)
+        self.session_factory.commit()
+        return instance
 
     def get_or_create(self, default, **kwargs):
         instance = self.get_one_or_none(**kwargs)
@@ -31,25 +29,23 @@ class SqlAlchemyRepository:
             return (instance, False)
 
     def update_one(self, attrs: dict, **kwargs):
-        with self.session_factory() as session:
-            stmt = (
-                update(self.Config.model)
-                .filter_by(**kwargs)
-                .values(**attrs)
-                .returning(self.Config.model)
-            )
-            result = session.execute(stmt)
-            session.commit()
-            return result.scalar_one_or_none()
+        stmt = (
+            update(self.Config.model)
+            .filter_by(**kwargs)
+            .values(**attrs)
+            .returning(self.Config.model)
+        )
+        result = self.session_factory.execute(stmt)
+        self.session_factory.commit()
+        return result.scalar_one_or_none()
 
     def delete_one(self, **kwargs):
         instance = self.get_one_or_none(**kwargs)
         if instance is None:
             return None
-        with self.session_factory() as session:
-            session.delete(instance)
-            session.commit()
-            return instance
+        self.session_factory.delete(instance)
+        self.session_factory.commit()
+        return instance
 
     def filter(self, **kwargs):
         self._base_query = self._base_query.filter_by(**kwargs)
@@ -64,14 +60,12 @@ class SqlAlchemyRepository:
         return self
 
     def first(self):
-        with self.session_factory() as session:
-            result = session.execute(self._base_query)
-            return result.scalar_one_or_none()
+        result = self.session_factory.execute(self._base_query)
+        return result.scalar_one_or_none()
 
     def all(self):
-        with self.session_factory() as session:
-            result = session.execute(self._base_query)
-            return result.scalars().all()
+        result = self.session_factory.execute(self._base_query)
+        return result.scalars().all()
 
     def base(self, query):
         self._base_query = query
@@ -88,30 +82,28 @@ class SqlAlchemyRepository:
         if limit <= 0:
             raise ValueError("limit value must be greater or equal 1")
 
-        with self.session_factory() as session:
-            stmt = self._base_query.offset((page - 1) * limit).limit(limit)
-            result = session.execute(stmt).scalars().all()
+        stmt = self._base_query.offset((page - 1) * limit).limit(limit)
+        result = self.session_factory.execute(stmt).scalars().all()
 
-            stmt = select(func.ceil(func.count() / limit)).select_from(self._base_query)
+        stmt = select(func.ceil(func.count() / limit)).select_from(self._base_query)
 
-            total_pages = session.execute(stmt).scalar_one_or_none()
-            next_page = page + 1
-            if next_page > total_pages:
-                next_page = None
-            prev_page = page - 1
-            if prev_page < 1:
-                prev_page = None
-            current_page = page
+        total_pages = self.session_factory.execute(stmt).scalar_one_or_none()
+        next_page = page + 1
+        if next_page > total_pages:
+            next_page = None
+        prev_page = page - 1
+        if prev_page < 1:
+            prev_page = None
+        current_page = page
 
-            return {
-                "result": result,
-                "prev_page": prev_page,
-                "next_page": next_page,
-                "total_pages": total_pages,
-                "current_page": current_page,
-            }
+        return {
+            "result": result,
+            "prev_page": prev_page,
+            "next_page": next_page,
+            "total_pages": total_pages,
+            "current_page": current_page,
+        }
 
     def delete_all(self):
-        with self.session_factory() as session:
-            session.query(self.Config.model).delete()
-            session.commit()
+        self.session_factory.query(self.Config.model).delete()
+        self.session_factory.commit()
