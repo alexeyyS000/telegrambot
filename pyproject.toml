@@ -19,6 +19,8 @@ psycopg = "^3.1.10"
 aiogram = "^3.1.1"
 pydantic = "2.3"
 pydantic-settings = "^2.0.3"
+pytest = "^7.4.2"
+sqlalchemy-utils = "^0.41.1"
 
 [build-system]
 requires = ["poetry-core"]

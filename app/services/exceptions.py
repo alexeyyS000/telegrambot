@@ -16,3 +16,15 @@ class AlreadyAdmin(BaseException):
 
 class AlreadyAdded(BaseException):
     pass
+
+
+class NotExists(BaseException):
+    pass
+
+
+class AlreadySubscribed(BaseException):
+    pass
+
+
+class AlreadyUnSubscribed(BaseException):
+    pass

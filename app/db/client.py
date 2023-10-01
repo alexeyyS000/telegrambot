@@ -11,8 +11,8 @@ def get_session():
     )
     try:
         yield session
-    except Exception:
+    except Exception as err:
         session.rollback()
-        raise Exception
+        raise err
     finally:
         session.close()

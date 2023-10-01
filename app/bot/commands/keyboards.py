@@ -7,10 +7,21 @@ from aiogram.types import (
 from . import samples
 
 
-def user_keyboard_unsubscribe():
-    button = [[KeyboardButton(text="unsubscribe(cancel application)")]]
+def user_keyboard_chenel_application():
+    button = [[KeyboardButton(text="cancel of registration")]]
     user_keyboard_unsubscribe = ReplyKeyboardMarkup(
-        keyboard=button, resize_keyboard=True, one_time_keyboard=True
+        keyboard=button, resize_keyboard=True
+    )
+    return user_keyboard_unsubscribe
+
+
+def user_keyboard_unsubscribe_or_subscribe():
+    button = [
+        [KeyboardButton(text="/unsubscribe")],
+        [KeyboardButton(text="/subscribe")],
+    ]
+    user_keyboard_unsubscribe = ReplyKeyboardMarkup(
+        keyboard=button, resize_keyboard=True
     )
     return user_keyboard_unsubscribe
 

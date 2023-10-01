@@ -1,54 +1,85 @@
 from db.dal.user import UserDAL
 from db.client import get_session
 import contextlib
-from exceptions import *
+from .exceptions import *
 
 
 @contextlib.contextmanager
-def get_user_service(id):
+def get_user_service():
     with get_session() as session:
         user_dal = UserDAL(session)
-        yield UserService(user_dal, id)
+        yield UserService(user_dal)
 
 
 class UserService:
-    def __init__(self, dal, id):
+    def __init__(self, dal):
         self.dal = dal
-        self.instance = self.dal.get_one_or_none(id=id)
-        if self.instance is None:
-            self.id = id
 
-    def ban(self):
-        if not self.instance.banned:
+    def ban(self, id):
+        instance = self.dal.get_one_or_none(id=id)
+        if instance is None:
+            raise NotExists
+        elif not instance.banned:
             self.dal.update_one(
                 {"admin": False, "pending": False, "subscriber": False, "banned": True},
-                id=self.instance.id,
+                id=id,
             )
         else:
             raise AlreadyBanned("Already added")
 
-    def add(self):
-        if not self.instance.subscriber:
-            self.dal.update_one(
-                {"pending": False, "subscriber": True}, id=self.instance.id
-            )
+    def add(self, id):
+        instance = self.dal.get_one_or_none(id=id)
+        if instance is None:
+            raise NotExists
+        elif instance.pending:
+            self.dal.update_one({"pending": False}, id=id)
         else:
             raise AlreadyAdded("Already added")
 
-    def make_admin(self):
-        if not self.instance.admin:
-            self.dal.update_one({"admin": True}, id=self.instance.id)
+    def make_admin(self, id):
+        instance = self.dal.get_one_or_none(id=id)
+        if instance is None:
+            raise NotExists
+        elif not instance.admin:
+            self.dal.update_one({"admin": True}, id=id)
         else:
             raise AlreadyAdmin("Already admin")
 
-    def refusal(self):
-        if self.instance is not None:
-            self.dal.delete_one(id=self.instance.id)
+    def refusal(self, id):
+        instance = self.dal.get_one_or_none(id=id)
+        if instance is not None:
+            self.dal.delete_one(id=id)
         else:
             raise AlreadyRefusaled("Already refusaled")
 
     def create(self, **kwargs):
-        if self.instance is not None:
+        instance = self.dal.get_one_or_none(id=kwargs["id"])
+        if instance is not None:
             raise AlreadyExists("Already exist")
-        kwargs["id"] = self.id
-        self.dal.create_one(**kwargs)
+        else:
+            return self.dal.create_one(**kwargs)
+
+    def subscribe(self, id):
+        instance = self.dal.get_one_or_none(id=id)
+        if instance is None:
+            raise NotExists
+        elif not instance.subscriber:
+            self.dal.update_one({"subscriber": True}, id=id)
+        else:
+            raise AlreadySubscribed("Already subscribed")
+
+    def unsubscribe(self, id):
+        instance = self.dal.get_one_or_none(id=id)
+        if instance is None:
+            raise NotExists
+        elif instance.subscriber:
+            self.dal.update_one({"subscriber": False}, id=id)
+        else:
+            raise AlreadyUnSubscribed("Already ununsubscribed")
+
+    def get_one_or_none(self, id):
+        instance = self.dal.get_one_or_none(id=id)
+        return instance
+
+    def get_pagination(self, page=1):
+        return self.dal.fetch(3, page)
