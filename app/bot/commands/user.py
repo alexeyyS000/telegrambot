@@ -1,9 +1,4 @@
 # flake8: noqa: F811
-import sys
-
-sys.path.append("/Users/alex1/Desktop/project/telegrambot/app")
-
-
 import datetime
 from aiogram import types
 from aiogram.fsm.context import FSMContext
